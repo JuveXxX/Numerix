@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Numerix</title>
+	<link rel="stylesheet" href="./fontawesome/css/all.min.css">
+	<link rel="icon" type="image/icon" href="./images/file_00000000e82471fdb0e4c3667d05f902.ico">
+	<link rel="stylesheet" type="text/css" href="./style.css">
+	<link rel="stylesheet" type="text/css" href="./bootstrap/css/bootstrap.min.css">
+</head>
+<body class="text-center d-flex justify-content-center">
+	<div class="bg-transparent text-center w-70 h-50" id="boite">
+		<h2 class="text-primary mb-4">Devinez le nombre entre 1 et 100</h2>
+
+		<div class="d-flex justify-content-between text-white">
+			<span class="temps" id="temps">00:00:00</span>
+			<span class="cliques" id="clic">fois: 0</span>
+		</div>
+
+		<div class="w-50 d-flex mx-auto my-4">
+			<input type="number" name="nombre" class="form-control text-center w-100 fw-bold" min="1" max="100"
+			step="1" id="input-nombre">
+		</div>
+
+		<div class="text-white d-flex justify-content-around">
+			<span id="deb">1</span>
+			<span id="mil">?</span>
+			<span id="fin">100</span>
+		</div>
+		<button id="button-check" class="btn btn-primary rounded text-light fw-bold my-3 w-50" onclick="proposerNombre()">Valider</button>
+
+		<div id="message" class="d-flex text-center justify-content-center fw-bold pt-2"></div>
+
+	</div>
+	
+
+	<script type="text/javascript" src="./script.js"></script>
+
+</body>
+</html>
