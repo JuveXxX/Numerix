@@ -53,6 +53,7 @@ input:invalid{
 		height: 100vh;
 		border-radius: 0;
 		border: none;
+		flex-direction: column;
 		justify-content: center;
 	}
 }

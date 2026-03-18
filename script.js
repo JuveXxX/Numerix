@@ -1,9 +1,21 @@
 
-const button= document.getElementById('button-click')
+const button= document.getElementById('button-check')
 const temps= document.getElementById('temps')
 const deb= document.getElementById('deb')
 const fin= document.getElementById('fin')
 const mil= document.getElementById('mil')
+const message= document.getElementById('message')
+const icone= document.createElement('i')
+const input=document.getElementById('input-nombre')
+const clic= document.getElementById('clic')
+
+let jeuTermine=false;
+
+// Le compteur
+let compteur=0;
+
+
+
 
 // La fonction pour générer un nombre aléatoire
 
@@ -41,7 +53,7 @@ function afficherTemps(){
 		let h= heures < 10 ? "0" + heures: heures;
 
 		// Affecter à l'interface
-		temps.innerText=`${h}:${m}:${s}`;
+		temps.innerText=`${h}h:${m}m:${s}s`;
 
 	}, 1000);
 }
@@ -66,40 +78,42 @@ function supprimeStyle(message) {
 
 
 // Création du nombre généré
-const vue= nombreAleatoire()
+let vue= nombreAleatoire()
 
 
 function situerChoix(index){
-	if (vue > index) {
+	if (vue > index && index > 1) {
 		deb.textContent=index;
-	} else{
+
+	} else if(vue < index && index < 101){
 		fin.textContent=index;
+
+	} else if (vue > index && index < 1){
+		deb.textContent="1";
+
+	} else if (vue < index && index > 101) {
+		fin.textContent="100";
 	}
 }
-
-
-// Le compteur
-let compteur=0;
 
 // La fonction proposer le nombre
 
 function proposerNombre(){
 
+	if (jeuTermine) {
+		rejouer();
+		return;
+	}
+
 	compteur++;
-	document.getElementById('clic').innerText= `fois: ${compteur}`;
+	clic.innerText= `coup: ${compteur}`;
 
 	// Récupération de la valeur
-	const input=document.getElementById('input-nombre')
 	const valeur= input.value
 
 
 	// Convertir la chaine de caractère en entier
 	const valeurNet= parseInt(valeur, 10)
-
-
-	// La div du message
-	const message= document.getElementById('message')
-	const icone= document.createElement('i')
 
 
 	// Vérification du nombre proposé
@@ -110,11 +124,15 @@ function proposerNombre(){
 		message.textContent= "Bravo" 
 		message.classList.add("bien-joue", "rounded")
 		arretTemps()
+
+		button.innerText= "Rejouer";
+		button.classList.remove("btn-primary");
+		button.classList.add("btn-warning");
+		jeuTermine=true;
 		
 
 	} else if (valeurNet > vue) {
 		situerChoix(valeurNet)
-		console.log("trop grand")
 		message.textContent= "Le nombre est plus petit"
 		message.classList.add("presque", "rounded")
 		supprimeStyle(message)
@@ -126,14 +144,43 @@ function proposerNombre(){
 		message.classList.add("presque", "rounded")
 		supprimeStyle(message)
 
-	} else {
+	} else if(valeurNet < 1 || valeurNet > 100){
 
-		message.textContent= "Erreur"
+		message.textContent= "La valeur ne se situe pas dans l'intervalle"
+		message.classList.add("error", "rounded")
+		supprimeStyle(message)
+	}
+
+	else{
+		message.textContent= "Entrez un nombre"
 		message.classList.add("error", "rounded")
 		supprimeStyle(message)
 	}
 
 }
+
+
+// La fonction de rejouer
+
+function rejouer() {
+
+	vue= nombreAleatoire();
+	temps.innerText="00h:00m:00s";
+	message.classList.remove('bien-joue', 'presque', 'error');
+	message.textContent="";
+	input.value="";
+	clic.innerText="coup: 0";
+	deb.textContent="1";
+	mil.textContent="?";
+	mil.classList.remove("text-white", "bg-success", "rounded-circle", "m-1", "p-1");
+	fin.textContent="100";
+	button.innerText="Valider";
+	button.classList.remove("btn-warning");
+	button.classList.add("btn-primary");
+	afficherTemps()
+	jeuTermine= false;
+}
+
 
 
 
