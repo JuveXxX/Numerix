@@ -1,0 +1,2 @@
+C'est le seul fichier qui a le droit de toucher au DOM. Il récupère toutes les références DOM au chargement (dans un objet el privé) et expose des méthodes nommées d'après ce qu'elles font visuellement : feedbackFaux(), feedbackVictoire(nombre, essais), feedbackGameOver(nombre, raison), setStep(n), mettreAJourCoups(n), etc.
+game.js ne manipule jamais document.getElementById directement — il passe toujours par UI. Cette séparation garantit que si le HTML change (un id renommé, un élément déplacé), seul ui.js a besoin d'être mis à jour.
