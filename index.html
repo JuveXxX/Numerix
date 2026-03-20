@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Numerix</title>
 
-  <!-- Police d'affichage éditoriale (serif) + monospace pour les données -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -13,15 +12,88 @@
   <link rel="stylesheet" href="./style.css">
   <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
 </head>
+
+<!--
+  data-theme="dark" | "light" sur <html>
+  Appliqué immédiatement par theme.js avant le premier paint (anti-flash).
+-->
 <body>
 
-  <!-- =====================================================================
-       ÉCRAN PRINCIPAL
-       Structure : header éditorial → badges contraintes → stepper → carte
-  ====================================================================== -->
+  <!-- ==================================================================
+       BARRE DE NAVIGATION
+       Contient : brand · avatar géométrique + dropdown profil
+  =================================================================== -->
+  <nav class="nx-nav">
+
+    <div class="nx-nav-brand">Numerix</div>
+
+    <div class="nx-nav-right">
+
+      <!-- Avatar + dropdown -->
+      <div class="nx-avatar-wrap" id="nx-avatar-wrap">
+
+        <!--
+          Cercle avatar — le SVG géométrique est injecté par avatar.js.
+          Clic → ouvre le dropdown.
+        -->
+        <button
+          class="nx-avatar-btn"
+          id="nx-avatar-btn"
+          aria-label="Ouvrir le profil"
+          aria-expanded="false"
+          aria-controls="nx-dropdown"
+        >
+          <!-- SVG généré dynamiquement par avatar.js -->
+          <svg id="nx-avatar-svg" viewBox="0 0 36 36" aria-hidden="true"></svg>
+        </button>
+
+        <!-- Dropdown profil -->
+        <div
+          class="nx-dropdown"
+          id="nx-dropdown"
+          role="dialog"
+          aria-label="Profil"
+          hidden
+        >
+
+          <!--
+            Grand avatar cliquable → regénère un nouveau motif.
+            avatar.js branche l'événement click sur ce bouton.
+          -->
+          <button
+            class="nx-avatar-large"
+            id="nx-avatar-large"
+            title="Cliquer pour regénérer"
+            aria-label="Regénérer l'avatar"
+          >
+            <svg id="nx-large-svg" viewBox="0 0 72 72" aria-hidden="true"></svg>
+          </button>
+
+          <!-- Label regénérer (texte cliquable sous l'avatar) -->
+          <button class="nx-regen-btn" id="nx-regen-btn">
+            &#8635; Regénérer
+          </button>
+
+          <div class="nx-dropdown-divider"></div>
+
+          <!-- Meilleur score (lu depuis localStorage par game.js) -->
+          <div class="nx-best-score">
+            <span class="nx-best-label">Meilleur score</span>
+            <span class="nx-best-value" id="nx-best-value">—</span>
+          </div>
+
+        </div><!-- /#nx-dropdown -->
+      </div><!-- /.nx-avatar-wrap -->
+
+    </div><!-- /.nx-nav-right -->
+  </nav>
+
+
+  <!-- ==================================================================
+       CONTENU PRINCIPAL
+  =================================================================== -->
   <main class="nx-root">
 
-    <!-- En-tête de style magazine -->
     <header class="nx-header">
       <p class="nx-eyebrow">Numerix — édition difficile</p>
       <h1 class="nx-title">Trouvez<br>le nombre</h1>
@@ -29,16 +101,12 @@
       <p class="nx-subtitle" id="nx-subtitle">1 — 100 &nbsp;·&nbsp; aucun indice</p>
     </header>
 
-    <!-- Badges des 3 contraintes actives -->
-    <!-- Les classes active / danger sont gérées dynamiquement par ui.js -->
     <div class="nx-constraints">
       <span class="nx-badge active" id="badge-coups">10 coups</span>
       <span class="nx-badge active" id="badge-timer">60 s</span>
       <span class="nx-badge">zéro indice</span>
     </div>
 
-    <!-- Stepper éditorial (3 étapes visuelles) -->
-    <!-- game.js appelle UI.setStep(n) pour avancer l'état -->
     <nav class="nx-steps" id="nx-steps" aria-label="Étapes du jeu">
       <div class="nx-step" id="step-0">
         <div class="nx-step-dot current" aria-current="step">01</div>
@@ -54,10 +122,8 @@
       </div>
     </nav>
 
-    <!-- Carte de jeu principale -->
     <section class="nx-card" aria-label="Zone de jeu">
 
-      <!-- Barre de statistiques -->
       <div class="nx-stats">
         <div class="nx-stat">
           <div class="nx-stat-val" id="stat-coups">10</div>
@@ -73,15 +139,13 @@
         </div>
       </div>
 
-      <!-- Champ de saisie + bouton Valider -->
       <p class="nx-input-label">Votre proposition</p>
       <div class="nx-input-row">
         <input
           class="nx-number-input"
           type="number"
           id="nx-input"
-          min="1"
-          max="100"
+          min="1" max="100"
           placeholder="—"
           autocomplete="off"
           aria-label="Entrez un nombre"
@@ -89,16 +153,12 @@
         <button class="nx-btn" id="nx-btn-valider">Valider</button>
       </div>
 
-      <!-- Zone de feedback (état : empty / wrong / ok / gameover) -->
-      <!-- Géré par ui.js → setFeedback() -->
       <div class="nx-feedback empty" id="nx-feedback" role="alert" aria-live="assertive">
         En attente de votre premier essai
       </div>
 
-      <!-- Historique des tentatives sous forme de pastilles -->
       <div class="nx-history" id="nx-history" aria-label="Historique"></div>
 
-      <!-- Sélecteur de difficulté (borne max) -->
       <div class="nx-difficulty">
         <span class="nx-difficulty-label">Intervalle</span>
         <select class="nx-select" id="nx-difficulte" aria-label="Choisir l'intervalle">
@@ -108,16 +168,40 @@
         </select>
       </div>
 
-      <!-- Bouton secondaire : relancer une partie -->
       <button class="nx-btn secondary" id="nx-btn-rejouer">Nouvelle partie</button>
 
     </section>
 
   </main>
 
-  <!-- Scripts — dans l'ordre de dépendance : timer → ui → game -->
+
+  <!-- ==================================================================
+       TOGGLE THÈME FLOTTANT (bas droite)
+       Injecte l'icône et le label via theme.js
+  =================================================================== -->
+  <button
+    class="nx-float-toggle"
+    id="nx-theme-btn"
+    aria-label="Basculer le thème"
+  >
+    <svg class="nx-float-icon" id="nx-theme-icon" viewBox="0 0 16 16"
+         fill="none" aria-hidden="true"></svg>
+    <span id="nx-theme-label"></span>
+  </button>
+
+
+  <!--
+    Ordre de chargement critique :
+      1. theme.js  → applique le thème avant tout rendu
+      2. timer.js  → chronomètre (pas de DOM)
+      3. ui.js     → couche DOM
+      4. avatar.js → génération SVG géométrique + dropdown
+      5. game.js   → logique de jeu
+  -->
+  <script src="./js/theme.js"></script>
   <script src="./js/timer.js"></script>
   <script src="./js/ui.js"></script>
+  <script src="./js/avatar.js"></script>
   <script src="./js/game.js"></script>
 
 </body>

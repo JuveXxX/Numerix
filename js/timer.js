@@ -1,59 +1,51 @@
 /**
  * @file timer.js
- * @description Module chronomètre — supporte deux modes :
+ * @description Module chronomètre — aucune référence au DOM.
  *
- *   - Compte à rebours (countdown) : démarre depuis une valeur et décrémente.
- *   - Chronomètre classique (stopwatch) : part de 0 et incrémente.
+ * Deux modes :
+ *   - Compte à rebours (countdown) : décrémente depuis une valeur initiale.
+ *   - Chronomètre (stopwatch)      : incrémente depuis 0.
  *
- * Ce fichier ne touche pas au DOM — il notifie via des callbacks.
+ * Notifications via callbacks → aucun couplage avec l'interface.
  *
- * API publique (objet global `Timer`) :
+ * API (objet global `Timer`) :
  *   Timer.startCountdown(secondes, onTick, onEnd)
  *   Timer.startStopwatch(onTick)
  *   Timer.stop()
  *   Timer.reset()
- *   Timer.getSecondes()  → secondes restantes (countdown) ou écoulées (stopwatch)
+ *   Timer.getSecondes()   → valeur courante
+ *   Timer.isActif()       → boolean
  */
 
 const Timer = (() => {
 
-  // ── État privé ─────────────────────────────────────────────────────────────
-  let valeur    = 0;        // Valeur courante (décroît ou croît selon le mode)
-  let mode      = null;     // 'countdown' | 'stopwatch' | null
-  let intervalle = null;    // Référence au setInterval actif
-  let actif     = false;
+  let valeur     = 0;
+  let mode       = null;    // 'countdown' | 'stopwatch' | null
+  let intervalle = null;
+  let actif      = false;
 
-  // ── Helpers privés ─────────────────────────────────────────────────────────
-
-  /**
-   * Arrête proprement l'intervalle interne.
-   */
   function clearTimer() {
     clearInterval(intervalle);
     intervalle = null;
     actif = false;
   }
 
-  // ── API publique ───────────────────────────────────────────────────────────
   return {
 
     /**
      * Démarre un compte à rebours.
-     *
-     * @param {number}   secondesInit - Durée totale en secondes (ex. 60).
-     * @param {function} onTick       - Appelé chaque seconde avec la valeur restante.
-     * @param {function} onEnd        - Appelé quand le compteur atteint 0.
+     * @param {number}   secondesInit - Durée totale.
+     * @param {function} onTick       - Appelé chaque seconde (valeur restante).
+     * @param {function} onEnd        - Appelé à l'expiration.
      */
     startCountdown(secondesInit, onTick, onEnd) {
       clearTimer();
       valeur = secondesInit;
       mode   = 'countdown';
       actif  = true;
-
       intervalle = setInterval(() => {
         valeur--;
         if (typeof onTick === 'function') onTick(valeur);
-
         if (valeur <= 0) {
           clearTimer();
           if (typeof onEnd === 'function') onEnd();
@@ -63,52 +55,30 @@ const Timer = (() => {
 
     /**
      * Démarre un chronomètre croissant.
-     *
-     * @param {function} onTick - Appelé chaque seconde avec le temps écoulé.
+     * @param {function} onTick - Appelé chaque seconde (valeur écoulée).
      */
     startStopwatch(onTick) {
       clearTimer();
       valeur = 0;
       mode   = 'stopwatch';
       actif  = true;
-
       intervalle = setInterval(() => {
         valeur++;
         if (typeof onTick === 'function') onTick(valeur);
       }, 1000);
     },
 
-    /**
-     * Arrête le timer (sans remettre à zéro la valeur).
-     */
-    stop() {
-      clearTimer();
-    },
+    /** Arrête sans remettre à zéro. */
+    stop()  { clearTimer(); },
 
-    /**
-     * Arrête le timer et remet la valeur à 0.
-     */
-    reset() {
-      clearTimer();
-      valeur = 0;
-      mode   = null;
-    },
+    /** Arrête et remet à zéro. */
+    reset() { clearTimer(); valeur = 0; mode = null; },
 
-    /**
-     * Retourne la valeur actuelle (secondes restantes ou écoulées).
-     * @returns {number}
-     */
-    getSecondes() {
-      return valeur;
-    },
+    /** @returns {number} */
+    getSecondes() { return valeur; },
 
-    /**
-     * Indique si le timer est actuellement en cours.
-     * @returns {boolean}
-     */
-    isActif() {
-      return actif;
-    },
+    /** @returns {boolean} */
+    isActif() { return actif; },
 
   };
 
