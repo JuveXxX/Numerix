@@ -1,41 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Numerix</title>
-	<link rel="stylesheet" href="./fontawesome/css/all.min.css">
-	<link rel="icon" type="image/icon" href="./images/file_00000000e82471fdb0e4c3667d05f902.ico">
-	<link rel="stylesheet" type="text/css" href="./style.css">
-	<link rel="stylesheet" type="text/css" href="./bootstrap/css/bootstrap.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Numerix</title>
+
+  <!-- Police d'affichage éditoriale (serif) + monospace pour les données -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
 </head>
 <body>
-	<div class="bg-transparent text-center" id="boite">
-		<h2 class="text-primary mb-4">Devinez le nombre entre 1 et 100</h2>
 
-		<div class="d-flex justify-content-between text-white">
-			<span class="temps" id="temps">00h:00m:00s</span>
-			<span class="cliques" id="clic">coup: 0</span>
-		</div>
+  <!-- =====================================================================
+       ÉCRAN PRINCIPAL
+       Structure : header éditorial → badges contraintes → stepper → carte
+  ====================================================================== -->
+  <main class="nx-root">
 
-		<div class="w-50 d-flex mx-auto my-4">
-			<input type="number" name="nombre" class="form-control text-center w-100 fw-bold" min="1" max="100"
-			step="1" id="input-nombre">
-		</div>
+    <!-- En-tête de style magazine -->
+    <header class="nx-header">
+      <p class="nx-eyebrow">Numerix — édition difficile</p>
+      <h1 class="nx-title">Trouvez<br>le nombre</h1>
+      <div class="nx-divider"></div>
+      <p class="nx-subtitle" id="nx-subtitle">1 — 100 &nbsp;·&nbsp; aucun indice</p>
+    </header>
 
-		<div class="text-white d-flex justify-content-around">
-			<span id="deb">1</span>
-			<span id="mil">?</span>
-			<span id="fin">100</span>
-		</div>
-		<button id="button-check" class="btn btn-primary rounded text-light fw-bold my-3 w-50" onclick="proposerNombre()">Valider</button>
+    <!-- Badges des 3 contraintes actives -->
+    <!-- Les classes active / danger sont gérées dynamiquement par ui.js -->
+    <div class="nx-constraints">
+      <span class="nx-badge active" id="badge-coups">10 coups</span>
+      <span class="nx-badge active" id="badge-timer">60 s</span>
+      <span class="nx-badge">zéro indice</span>
+    </div>
 
-		<div id="message" class="d-flex text-center justify-content-center fw-bold pt-2"></div>
+    <!-- Stepper éditorial (3 étapes visuelles) -->
+    <!-- game.js appelle UI.setStep(n) pour avancer l'état -->
+    <nav class="nx-steps" id="nx-steps" aria-label="Étapes du jeu">
+      <div class="nx-step" id="step-0">
+        <div class="nx-step-dot current" aria-current="step">01</div>
+        <div class="nx-step-label current">Tentative</div>
+      </div>
+      <div class="nx-step" id="step-1">
+        <div class="nx-step-dot">02</div>
+        <div class="nx-step-label">Résultat</div>
+      </div>
+      <div class="nx-step" id="step-2">
+        <div class="nx-step-dot">03</div>
+        <div class="nx-step-label">Verdict</div>
+      </div>
+    </nav>
 
-	</div>
-	
+    <!-- Carte de jeu principale -->
+    <section class="nx-card" aria-label="Zone de jeu">
 
-	<script type="text/javascript" src="./script.js"></script>
+      <!-- Barre de statistiques -->
+      <div class="nx-stats">
+        <div class="nx-stat">
+          <div class="nx-stat-val" id="stat-coups">10</div>
+          <div class="nx-stat-label">coups restants</div>
+        </div>
+        <div class="nx-stat">
+          <div class="nx-stat-val" id="stat-timer">60</div>
+          <div class="nx-stat-label">secondes</div>
+        </div>
+        <div class="nx-stat">
+          <div class="nx-stat-val" id="stat-essais">0</div>
+          <div class="nx-stat-label">essais</div>
+        </div>
+      </div>
+
+      <!-- Champ de saisie + bouton Valider -->
+      <p class="nx-input-label">Votre proposition</p>
+      <div class="nx-input-row">
+        <input
+          class="nx-number-input"
+          type="number"
+          id="nx-input"
+          min="1"
+          max="100"
+          placeholder="—"
+          autocomplete="off"
+          aria-label="Entrez un nombre"
+        >
+        <button class="nx-btn" id="nx-btn-valider">Valider</button>
+      </div>
+
+      <!-- Zone de feedback (état : empty / wrong / ok / gameover) -->
+      <!-- Géré par ui.js → setFeedback() -->
+      <div class="nx-feedback empty" id="nx-feedback" role="alert" aria-live="assertive">
+        En attente de votre premier essai
+      </div>
+
+      <!-- Historique des tentatives sous forme de pastilles -->
+      <div class="nx-history" id="nx-history" aria-label="Historique"></div>
+
+      <!-- Sélecteur de difficulté (borne max) -->
+      <div class="nx-difficulty">
+        <span class="nx-difficulty-label">Intervalle</span>
+        <select class="nx-select" id="nx-difficulte" aria-label="Choisir l'intervalle">
+          <option value="100">1 – 100</option>
+          <option value="500">1 – 500</option>
+          <option value="1000">1 – 1000</option>
+        </select>
+      </div>
+
+      <!-- Bouton secondaire : relancer une partie -->
+      <button class="nx-btn secondary" id="nx-btn-rejouer">Nouvelle partie</button>
+
+    </section>
+
+  </main>
+
+  <!-- Scripts — dans l'ordre de dépendance : timer → ui → game -->
+  <script src="./js/timer.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/game.js"></script>
 
 </body>
 </html>

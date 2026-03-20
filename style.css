@@ -1,74 +1,574 @@
-body{
+/* =============================================================================
+   style.css — Numerix, édition difficile
+   Thème : magazine noir & blanc, typographie éditoriale
+   Polices : Playfair Display (titres/chiffres) + DM Mono (labels/interface)
+============================================================================= */
 
-	min-height: 100vh;
-	background-image: url(./images/fumée.jpg);
-	background-position: center;
-	background-repeat: no-repeat;
-	background-size: cover;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+
+/* =============================================================================
+   1. VARIABLES & RESET
+   Palette volontairement bichrome.
+   --nx-ink    : couleur principale du texte
+   --nx-paper  : fond des surfaces
+   --nx-ground : fond de page
+   --nx-muted  : texte secondaire / labels
+   --nx-border : bordures fines
+   --nx-danger : rouge d'urgence (coups/temps critiques)
+   --nx-warn   : orange d'alerte intermédiaire
+============================================================================= */
+
+:root {
+  --nx-ink:    #f5f0e8;
+  --nx-paper:  #111111;
+  --nx-ground: #0a0a0a;
+  --nx-muted:  #666666;
+  --nx-border: #2a2a2a;
+  --nx-faint:  #1e1e1e;
+  --nx-danger: #e24b4a;
+  --nx-warn:   #e8a03c;
+
+  --nx-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --nx-mono:  'DM Mono', 'Courier New', monospace;
 }
 
-#boite{
-	border-radius: 20px;
-	border: 2px solid #6495ED;
-	padding: 10px;
-	width: 70%;
-	height: 70%;
-}
-input{
-	display: block;
-	height: 3em;
-	width: 50%;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-input:invalid{
-	border: 1px solid #dd2d2d;
-	background: #f0cbcb;
+
+/* =============================================================================
+   2. LAYOUT — Page et conteneur racine
+============================================================================= */
+
+html, body {
+  height: 100%;
 }
 
-.bien-joue{
-	border: 2px solid #00FF00;
-	background-color: #A9DDC7;
-	height: 3em;
+body {
+  background: var(--nx-ground);
+  color: var(--nx-ink);
+  font-family: var(--nx-mono);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
 }
 
-.presque{
-	border: 2px solid #FFFF00;
-	background-color: #FDD782;
-	height: 3em;
+/* Conteneur principal centré, largeur éditoriale */
+.nx-root {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 }
 
-.error{
-	border: 2px solid #dd2d2d;
-	background: #f0cbcb;
-	height: 3em;
+
+/* =============================================================================
+   3. EN-TÊTE ÉDITORIAL
+============================================================================= */
+
+.nx-header {
+  text-align: center;
+  margin-bottom: 32px;
+  width: 100%;
 }
 
-@media screen(max-width: 768px){
+/* Ligne de chapeau au-dessus du titre (petites capitales monospace) */
+.nx-eyebrow {
+  font-family: var(--nx-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--nx-muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
 
-	html, body{
-		padding: 0;
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
+/* Titre principal — serif grand corps, espacement serré */
+.nx-title {
+  font-family: var(--nx-serif);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--nx-ink);
+  line-height: 1.08;
+  margin-bottom: 8px;
+}
 
-	#boite{
-		display: flex;
-		width: 100%;
-		height: 100%;
-		border-radius: 0;
-		border: none;
-		align-items: center;
-		box-sizing: border-box;
-		flex-direction: column;
-		justify-content: center;
-	}
+/* Ligne de séparation horizontale fine */
+.nx-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--nx-ink);
+  opacity: 0.2;
+  margin: 16px auto;
+}
 
-	#boite * {
-		max-width: 95%;
-		box-sizing: border-box;
-	}
+/* Sous-titre (intervalle courant, mis à jour par ui.js) */
+.nx-subtitle {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--nx-muted);
+}
+
+
+/* =============================================================================
+   4. BADGES DE CONTRAINTES
+============================================================================= */
+
+.nx-constraints {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+/* Badge par défaut (inactif / neutre) */
+.nx-badge {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nx-muted);
+  border: 0.5px solid var(--nx-border);
+  padding: 5px 14px;
+}
+
+/* Badge actif (contrainte en cours) */
+.nx-badge.active {
+  color: var(--nx-ink);
+  border-color: rgba(245, 240, 232, 0.35);
+}
+
+/* Badge en alerte critique (coups ou temps très bas) */
+.nx-badge.danger {
+  color: var(--nx-danger);
+  border-color: var(--nx-danger);
+}
+
+
+/* =============================================================================
+   5. STEPPER ÉDITORIAL
+   3 étapes numérotées : 01 Tentative → 02 Résultat → 03 Verdict
+   Ligne de connexion générée en CSS (::after du .nx-step)
+============================================================================= */
+
+.nx-steps {
+  display: flex;
+  width: 100%;
+  max-width: 380px;
+  margin-bottom: 32px;
+}
+
+.nx-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Ligne de connexion entre les étapes */
+.nx-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  width: 100%;
+  height: 0.5px;
+  background: var(--nx-border);
+  z-index: 0;
+}
+
+/* Pastille de numéro */
+.nx-step-dot {
+  width: 32px;
+  height: 32px;
+  border: 0.5px solid #3a3a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: #444;
+  background: var(--nx-ground);
+  position: relative;
+  z-index: 1;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+/* Étape actuelle */
+.nx-step-dot.current {
+  border-color: var(--nx-ink);
+  color: var(--nx-ink);
+}
+
+/* Étape passée (validée) */
+.nx-step-dot.done {
+  background: var(--nx-ink);
+  border-color: var(--nx-ink);
+  color: var(--nx-ground);
+}
+
+/* Labels texte sous les pastilles */
+.nx-step-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: #3a3a3a;
+  margin-top: 8px;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.nx-step-label.current { color: #888; }
+.nx-step-dot.done + .nx-step-label { color: #555; }
+
+
+/* =============================================================================
+   6. CARTE DE JEU
+============================================================================= */
+
+.nx-card {
+  width: 100%;
+  border: 0.5px solid var(--nx-border);
+  padding: 28px 28px 24px;
+  background: var(--nx-paper);
+}
+
+
+/* =============================================================================
+   7. BARRE DE STATISTIQUES (coups · timer · essais)
+============================================================================= */
+
+.nx-stats {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+  border-bottom: 0.5px solid var(--nx-faint);
+}
+
+.nx-stat { text-align: center; }
+
+/* Valeur numérique en grand serif — couleur neutre / avertissement / danger */
+.nx-stat-val {
+  font-family: var(--nx-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--nx-ink);
+  line-height: 1;
+  transition: color 0.3s;
+}
+
+.nx-stat-val.warn   { color: var(--nx-warn);   }
+.nx-stat-val.danger { color: var(--nx-danger);  }
+
+.nx-stat-label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: #4a4a4a;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+
+
+/* =============================================================================
+   8. ZONE DE SAISIE
+============================================================================= */
+
+.nx-input-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--nx-muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.nx-input-row {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+/* Champ number — grand serif pour le chiffre saisi */
+.nx-number-input {
+  flex: 1;
+  background: var(--nx-ground);
+  border: 0.5px solid #333;
+  border-right: none;
+  color: var(--nx-ink);
+  font-family: var(--nx-serif);
+  font-size: 30px;
+  font-weight: 700;
+  text-align: center;
+  padding: 12px 16px;
+  outline: none;
+  -moz-appearance: textfield;
+  transition: border-color 0.15s;
+}
+
+.nx-number-input::-webkit-outer-spin-button,
+.nx-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.nx-number-input:focus {
+  border-color: var(--nx-ink);
+}
+
+.nx-number-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+/* =============================================================================
+   9. BOUTONS
+============================================================================= */
+
+/* Bouton principal (fond clair → texte sombre) */
+.nx-btn {
+  background: var(--nx-ink);
+  color: var(--nx-ground);
+  border: none;
+  font-family: var(--nx-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 12px 22px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.nx-btn:hover   { background: #ddd8d0; }
+.nx-btn:active  { background: #c4beb7; }
+
+.nx-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Bouton secondaire (contour) */
+.nx-btn.secondary {
+  background: transparent;
+  color: var(--nx-ink);
+  border: 0.5px solid var(--nx-border);
+  margin-top: 18px;
+  width: 100%;
+  padding: 12px;
+  display: block;
+}
+
+.nx-btn.secondary:hover {
+  border-color: rgba(245, 240, 232, 0.4);
+}
+
+
+/* =============================================================================
+   10. ZONE DE FEEDBACK
+   États : .empty (gris, en attente) / sans classe (faux) / .ok (victoire)
+============================================================================= */
+
+.nx-feedback {
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--nx-danger);
+  border: 0.5px solid var(--nx-faint);
+  padding: 12px 16px;
+  text-align: center;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+/* En attente (aucune proposition encore) */
+.nx-feedback.empty {
+  color: #333;
+  border-color: #1a1a1a;
+}
+
+/* Victoire */
+.nx-feedback.ok {
+  color: var(--nx-ink);
+  border-color: var(--nx-ink);
+  min-height: 120px;
+}
+
+/* Grand nombre affiché en mode victoire / game over */
+.nx-feedback-number {
+  font-family: var(--nx-serif);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--nx-ink);
+  line-height: 1;
+  margin-top: 6px;
+}
+
+/* Sous-label sous le grand nombre */
+.nx-feedback-sublabel {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--nx-muted);
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+.nx-feedback-sublabel.danger { color: var(--nx-danger); }
+
+
+/* =============================================================================
+   11. HISTORIQUE DES TENTATIVES
+   Chaque essai apparaît comme une petite pastille barrée
+============================================================================= */
+
+.nx-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+  min-height: 0;
+}
+
+.nx-attempt {
+  font-family: var(--nx-mono);
+  font-size: 10px;
+  color: #4a4a4a;
+  border: 0.5px solid #222;
+  padding: 3px 10px;
+  position: relative;
+}
+
+/* Barre horizontale sur le numéro (visuellement "barré") */
+.nx-attempt::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  right: 6px;
+  height: 0.5px;
+  background: #333;
+}
+
+
+/* =============================================================================
+   12. SÉLECTEUR DE DIFFICULTÉ
+============================================================================= */
+
+.nx-difficulty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 0.5px solid var(--nx-faint);
+}
+
+.nx-difficulty-label {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--nx-muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nx-select {
+  background: var(--nx-ground);
+  color: var(--nx-ink);
+  border: 0.5px solid #333;
+  font-family: var(--nx-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  padding: 6px 10px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+}
+
+.nx-select:focus {
+  border-color: rgba(245, 240, 232, 0.4);
+}
+
+/* Options du select */
+.nx-select option {
+  background: #1a1a1a;
+  color: var(--nx-ink);
+}
+
+
+/* =============================================================================
+   13. CURSEUR CLIGNOTANT (animation dans le message d'attente)
+============================================================================= */
+
+@keyframes nx-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.nx-cursor {
+  display: inline-block;
+  width: 1px;
+  height: 0.9em;
+  background: #333;
+  margin-left: 3px;
+  vertical-align: text-bottom;
+  animation: nx-blink 1.1s step-end infinite;
+}
+
+
+/* =============================================================================
+   14. RESPONSIVE — Mobile (≤ 600px)
+============================================================================= */
+
+@media screen and (max-width: 600px) {
+
+  body {
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .nx-root {
+    max-width: 100%;
+    min-height: 100vh;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+
+  .nx-title {
+    font-size: 32px;
+  }
+
+  .nx-card {
+    padding: 22px 18px 18px;
+  }
+
+  .nx-stats {
+    gap: 8px;
+  }
+
+  .nx-number-input {
+    font-size: 24px;
+  }
+
+  /* Sur très petit écran, le bouton Valider passe dessous */
+  @media screen and (max-width: 360px) {
+    .nx-input-row {
+      flex-direction: column;
+    }
+    .nx-number-input {
+      border-right: 0.5px solid #333;
+      border-bottom: none;
+    }
+    .nx-btn:not(.secondary) {
+      padding: 14px;
+    }
+  }
 }
